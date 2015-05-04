@@ -25,7 +25,7 @@ var tags = [
   'ul,/ul',
   'ol,/ol',
   'li,/li,3',
-  '<a href="#">,/a',
+  'a href="#",/a',
   'em,/em',
   'strong,/strong',
   'small,/small',
@@ -34,19 +34,27 @@ var tags = [
   'br /,,2',
   ];
 
-function walk(collection, closure){
+function walk(collection, callback){
   switch(collection instanceof Array){
     case true:
       for(var x = 0; x < collection.length; x++){
-        closure(x, collection[x]);
+        callback(x, collection[x]);
       }
       break;
     case false:
       for(var x in collection){
-        closure(x, collection[x]);
+        callback(x, collection[x]);
       }
       break;
   }
+}
+
+function rgb(r, g, b){
+  color = new RGBColor();
+  color.red = r;
+  color.green = g;
+  color.blue = b;
+  return color;
 }
 
 function Tags(tags){
@@ -80,15 +88,15 @@ function Tags(tags){
             value = "<" + value + ">";
           }
           tagNumber++;
-          var element = app.activeDocument.textFrames.pointText([0,-(tagNumber * size)]);
-          element.contents = value;
+          var textBox = app.activeDocument.textFrames.pointText([0,-(tagNumber * size)]);
+          textBox.contents = value;
 
-          var text = element.textRange.characterAttributes;
-          text.textFont = font;
-          text.tracking = tracking;
-          text.size     = size;
+          var textChars = textBox.textRange.characterAttributes;
+          textChars.textFont = font;
+          textChars.tracking = tracking;
+          textChars.size     = size;
 
-          instance.groups.push(element.createOutline());
+          instance.groups.push(textBox);
         })
       }
     })
@@ -96,6 +104,20 @@ function Tags(tags){
 
   function lines(){
     walk(instance.groups, function(index, group){
+      var bounds = group.geometricBounds;
+      var left = bounds[0];
+      var top = bounds[1];
+      var right = bounds[2];
+      var bottom = bounds[3];
+      var border = group.pathItems.rectangle(
+        top,
+        left,
+        right - left,
+        top - bottom
+        );
+      border.filled = false;
+      border.strokeColor = rgb(255, 0, 0);
+      border.strokeWidth = 0.001;
     })
   }
 }
