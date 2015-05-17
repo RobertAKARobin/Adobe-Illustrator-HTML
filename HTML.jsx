@@ -1,6 +1,8 @@
-var font = app.textFonts.getByName("LetterGothicStd-Bold"); 
-var tracking = -100;
-var size = 12;
+var font = {
+  face:     app.textFonts.getByName("LetterGothicStd-Bold"), 
+  tracking: -100,
+  size:     12
+};
 var tags = [
 '!DOCTYPE html',
   'html,/html',
@@ -31,23 +33,23 @@ var tags = [
   'small,/small',
   'q,/q',
   '<img alt="," src="#"/>',
-  'br /,,2',
+  'br /,,1',
   ];
 
 function walk(collection, callback){
   switch(collection instanceof Array){
     case true:
-      for(var x = 0; x < collection.length; x++){
+      for(var x = collection.length - 1; x >= 0; x--){
         callback(x, collection[x]);
-      }
+      };
       break;
     case false:
       for(var x in collection){
         callback(x, collection[x]);
-      }
+      };
       break;
-  }
-}
+  };
+};
 
 function rgb(r, g, b){
   color = new RGBColor();
@@ -55,71 +57,97 @@ function rgb(r, g, b){
   color.green = g;
   color.blue = b;
   return color;
-}
+};
 
-function Tags(tags){
-  var instance	  = this;
-  this.tags    	  = tags;
-  this.all        = [];
-  this.groups     = [];
+function pad(value){
+  var multiple      = 3,
+      padString     = " ",
+      value         = padString + value + padString,
+      paddingNeeded = multiple - (value.length % multiple),
+      paddingRight  = Math.round(paddingNeeded / 2),
+      paddingLeft   = paddingNeeded - paddingRight;
+  if(paddingNeeded % multiple === 0){
+    return value;
+  }else{
+    return Array(paddingLeft + 1).join(padString) + value + Array(paddingRight + 1).join(padString);
+  };
+};
+
+function makeTags(tags){
+  var tags    = tags,
+      all     = [],
+      layer   = app.activeDocument.activeLayer,
+      groups  = layer.groupItems,
+      left    = 0,
+      up      = 0;
   parse();
-  create();
-  lines();
+  place();
 
   function parse(){
-    walk(instance.tags, function(x, tag){
+    walk(tags, function(x, tag){
       var tag = tag.split(",");
-      if(tag[0] == ""){ return }
-      instance.all.push({
-        "open" : tag[0],
-        "close": tag[1],
-        "repeat" : tag[2] ? tag[2] : 1
-      })
-    })
-  }
+      if(tag[0] == ""){
+        return;
+      }
+      all.push({
+        open : tag[0],
+        close: tag[1],
+        repeat : tag[2] ? tag[2] : 1
+      });
+    });
+    all = all.sort(function(a, b){
+      return a.open.length - b.open.length;
+    });
+  };
 
-  function create(){
-    var tagNumber = 0;
-    walk(instance.all, function(index, tag){
-      for(var x = 0; x < tag["repeat"]; x++){
+  function textBox(parent, value, startX, startY){
+    var group     = parent.groupItems.add(),
+        textBox   = group.textFrames.pointText([startX, startY]),
+        textChars = textBox.textRange.characterAttributes,
+        bounds,
+        border;
+
+    textBox.contents = value;
+    textChars.textFont = font.face;
+    textChars.tracking = font.tracking;
+    textChars.size     = font.size;
+
+    bounds = group.geometricBounds;
+    border = group.pathItems.rectangle(
+        bounds[1],
+        bounds[0],
+        bounds[2] - bounds[0],
+        UnitValue(.5, "cm").as("pt")
+        );
+    left = bounds[2];
+    border.filled = false;
+    border.strokeColor = rgb(255, 0, 0);
+    border.strokeWidth = 0.001;
+  };
+
+
+  function place(){
+    walk(all, function(index, tag){
+      for(var x = tag["repeat"] - 1; x >= 0; x--){
+        var pair = groups.add();
         walk(tag, function(type, value){
-          if(!value || type == "repeat"){ return }
+          if(!value || type == "repeat"){
+            return;
+          }
           if(value.indexOf("<") == -1  && value.indexOf(">") == -1){
             value = "<" + value + ">";
           }
-          tagNumber++;
-          var textBox = app.activeDocument.textFrames.pointText([0,-(tagNumber * size)]);
-          textBox.contents = value;
+          value = " " + value + " ";
 
-          var textChars = textBox.textRange.characterAttributes;
-          textChars.textFont = font;
-          textChars.tracking = tracking;
-          textChars.size     = size;
+          if(type === "open"){
+            up = up - UnitValue(.5, "cm").as("pt");
+            left = 0;
+          }
+          textBox(pair, value, left, up);
+        });
+      };
+    });
+  };
+};
 
-          instance.groups.push(textBox);
-        })
-      }
-    })
-  }
-
-  function lines(){
-    walk(instance.groups, function(index, group){
-      var bounds = group.geometricBounds;
-      var left = bounds[0];
-      var top = bounds[1];
-      var right = bounds[2];
-      var bottom = bounds[3];
-      var border = group.pathItems.rectangle(
-        top,
-        left,
-        right - left,
-        top - bottom
-        );
-      border.filled = false;
-      border.strokeColor = rgb(255, 0, 0);
-      border.strokeWidth = 0.001;
-    })
-  }
-}
-
-new Tags(tags)
+new makeTags(tags);
