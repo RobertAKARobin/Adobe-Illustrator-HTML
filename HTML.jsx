@@ -4,96 +4,99 @@ var font = {
   size:     24,
   theight:  UnitValue(.375, "in").as("pt")
 };
+
+
 var tags = [
   [
-    '<!DOCTYPE html>',
-    'html',
-    'head',
-    '&lt;',
-    '&gt;'
+    "<!DOCTYPE html>",
+    "html",
+    "head",
+    "&lt;",
+    "&gt;"
   ],
   [
-    'title',
-    'body',
-    'header',
-    '&ne;'
+    "title",
+    "body",
+    "header",
+    "&ne;"
   ],
   [
-    'main',
-    'footer',
-    '<img alt="',
-    '" src="#"/>'
+    "main",
+    "footer",
+    "<img alt='",
+    "' src='#'/>"
   ],
   [
-    'section',
-    'section',
-    'span'
+    "section",
+    "section",
+    "span"
   ],
   [
-    'h1',
-    'div',
-    'div',
-    '&shy;',
-    'ol'
+    "h1",
+    "   mailto:robin@magneticHTML.com   ",
+    "ol"
   ],
   [
-    'h2',
-    '<script>alert("Welcome!");</script>',
-    '<br/>',
-    'ul'
+    "h2",
+    "<script>alert('Welcome!');</script>",
+    "ul"
   ],
   [
-    'h2',
-    'li'
+    "h2",
+    "<style>*{ font-family:'Comic Sans';",
+    "li"
   ],
   [
-    'h3',
-    '<style>*{ font-family:"Comic Sans";',
-    'li'
+    "h3",
+    "position:fixed!important; }</style>",
+    "li",
   ],
   [
-    'h3',
-    'position:fixed!important; }</style>',
-    'li'
+    "h3",
+    "<? echo(T_PAAMAYIM_NEKUDOTAYIM); ?>",
+    "li",
   ],
   [
-    'dl',
-    '<?=T_PAAMAYIM_NEKUDOTAYIM;?>',
-    'dd'
+    "dl",
+    "&mdash;",
+    "&tradem;",
+    "&shy;",
+    "<!--",
+    "-->",
+    "dd"
   ],
   [
-    'dt',
-    '&mdash;',
-    '&hearts;',
-    '<!--',
-    '-->',
-    '&reg;',
-    'dd'
+    "dt",
+    "div",
+    "div",
+    "<br/>",
+    "dd"
   ],
   [
-    'dt',
-    'blockquote',
-    'q',
-    '&hellip;'
+    "dt",
+    "blockquote",
+    "q",
+    "&hellip;"
   ],
   [
-    'p',
-    'marquee',
-    'strong',
+    "p",
+    "marquee",
+    "strong",
+    "&copy;"
   ],
   [
-    'p',
-    'blink',
-    'pre',
-    '&amp;',
-    's'
+    "p",
+    "blink",
+    "pre",
+    "&amp;",
+    "s"
   ],
   [
-    'p',
-    'small',
-    '<a href="#">',
-    '</a>',
-    'em'
+    "p",
+    "aside",
+    "<a href='#'>",
+    "</a>",
+    "em"
   ]
 ];
 
@@ -101,14 +104,14 @@ function walk(collection, callback){
   switch(collection instanceof Array){
     case true:
       for(var x = 0; x < collection.length; x++){
-        callback(x, collection[x]);
-      };
-      break;
+      callback(x, collection[x]);
+    };
+    break;
     case false:
       for(var x in collection){
-        callback(x, collection[x]);
-      };
-      break;
+      callback(x, collection[x]);
+    };
+    break;
   };
 };
 
@@ -122,11 +125,11 @@ function rgb(r, g, b){
 
 function pad(value){
   var multiple      = 3,
-      padString     = " ",
-      value         = padString + value + padString,
-      paddingNeeded = multiple - (value.length % multiple),
-      paddingRight  = Math.round(paddingNeeded / 2),
-      paddingLeft   = paddingNeeded - paddingRight;
+    padString     = " ",
+    value         = padString + value + padString,
+    paddingNeeded = multiple - (value.length % multiple),
+    paddingRight  = Math.round(paddingNeeded / 2),
+    paddingLeft   = paddingNeeded - paddingRight;
   if(paddingNeeded % multiple === 0){
     return value;
   }else{
@@ -136,19 +139,19 @@ function pad(value){
 
 function makeTags(tags){
   var tags    = tags,
-      all     = [],
-      layer   = app.activeDocument.activeLayer,
-      groups  = layer.groupItems,
-      left    = 0,
-      up      = 0;
+    all     = [],
+    layer   = app.activeDocument.activeLayer,
+    groups  = layer.groupItems,
+    left    = 0,
+    up      = 0;
   place();
 
   function textBox(value){
     var group     = groups.add(),
-        textBox   = group.textFrames.pointText([left, up]),
-        textChars = textBox.textRange.characterAttributes,
-        bounds,
-        border;
+      textBox   = group.textFrames.pointText([left, up]),
+      textChars = textBox.textRange.characterAttributes,
+      bounds,
+    border;
 
     textBox.contents = " " + value + " ";
     textChars.textFont = font.face;
@@ -162,14 +165,14 @@ function makeTags(tags){
 
     bounds = group.geometricBounds;
     border = group.pathItems.rectangle(
-        bounds[1],
-        bounds[0],
-        bounds[2] - bounds[0],
-        font.theight
-        );
+      bounds[1],
+      bounds[0],
+      bounds[2] - bounds[0],
+      font.theight
+    );
     left = bounds[2];
     border.filled = false;
-    border.strokeColor = rgb(255, 0, 0);
+    border.strokeColor = rgb(0, 0, 0);
     border.strokeWidth = 0.001;
   };
 
@@ -178,7 +181,7 @@ function makeTags(tags){
       up = -1 * font.theight * (rownum + 1);
       left = 0;
       walk(row, function(tagnum, tag){
-        if(/^[a-zA-Z]$*/.test(tag)){
+        if(/^[a-zA-Z0-9]*$/.test(tag)){
           textBox("".concat("<",tag,">"));
           textBox("".concat("</",tag,">"));
         }else{
