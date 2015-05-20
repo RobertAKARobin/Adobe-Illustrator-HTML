@@ -5,50 +5,6 @@ var font = {
   theight:  UnitValue(.375, "in").as("pt")
 };
 var tags = [
-'!DOCTYPE html',
-  'html,/html',
-  'head,/head',
-  'title,/title',
-  'body,/body',
-  'header,/header',
-  'main,/main',
-  'footer,/footer',
-  'section,/section,2',
-  'div,/div,2',
-  'span,/span',
-  'h1,/h1',
-  'h2,/h2,2',
-  'h3,/h3,2',
-  'blockquote,/blockquote',
-  'p,/p,3',
-  'pre,/pre',
-  'dl,/dl',
-  'dt,/dt,2',
-  'dd,/dd,2',
-  'ul,/ul',
-  'ol,/ol',
-  'li,/li,3',
-  'a href="#",/a',
-  'em,/em',
-  'strong,/strong',
-  'small,/small',
-  'q,/q',
-  '<img alt="," src="#"/>',
-  'br /,,1',
-  '&amp;',
-  '&shy;',
-  '&mdash;',
-  '&ndash;',
-  '&hearts;',
-  '&lt;',
-  '&gt;',
-  '&rdquo;',
-  '&ldquo;',
-  '&ne;',
-  '&hellip;'
-  ];
-
-var works = [
   [
     '<!DOCTYPE html>',
     'html',
@@ -65,7 +21,8 @@ var works = [
   [
     'main',
     'footer',
-    '<img alt="','" src="#"/>'
+    '<img alt="',
+    '" src="#"/>'
   ],
   [
     'section',
@@ -74,12 +31,15 @@ var works = [
   ],
   [
     'h1',
-    'div,2',
+    'div',
+    'div',
     '&shy;',
     'ol'
   ],
   [
     'h2',
+    '<script>alert("Welcome!");</script>',
+    '<br/>',
     'ul'
   ],
   [
@@ -88,22 +48,26 @@ var works = [
   ],
   [
     'h3',
+    '<style>*{ font-family:"Comic Sans";',
     'li'
   ],
   [
     'h3',
+    'position:fixed!important; }</style>',
     'li'
   ],
   [
     'dl',
+    '<?=T_PAAMAYIM_NEKUDOTAYIM;?>',
     'dd'
   ],
   [
     'dt',
     '&mdash;',
     '&hearts;',
-    '&ldquo;',
-    '&rdquo;',
+    '<!--',
+    '-->',
+    '&reg;',
     'dd'
   ],
   [
@@ -116,7 +80,6 @@ var works = [
     'p',
     'marquee',
     'strong',
-    '<br />'
   ],
   [
     'p',
@@ -137,7 +100,7 @@ var works = [
 function walk(collection, callback){
   switch(collection instanceof Array){
     case true:
-      for(var x = collection.length - 1; x >= 0; x--){
+      for(var x = 0; x < collection.length; x++){
         callback(x, collection[x]);
       };
       break;
@@ -178,37 +141,24 @@ function makeTags(tags){
       groups  = layer.groupItems,
       left    = 0,
       up      = 0;
-  parse();
   place();
 
-  function parse(){
-    walk(tags, function(x, tag){
-      var tag = tag.split(",");
-      if(tag[0] == ""){
-        return;
-      }
-      all.push({
-        open : tag[0],
-        close: tag[1],
-        repeat : tag[2] ? tag[2] : 1
-      });
-    });
-    all = all.sort(function(a, b){
-      return a.open.length - b.open.length;
-    });
-  };
-
-  function textBox(parent, value, startX, startY){
-    var group     = parent.groupItems.add(),
-        textBox   = group.textFrames.pointText([startX, startY]),
+  function textBox(value){
+    var group     = groups.add(),
+        textBox   = group.textFrames.pointText([left, up]),
         textChars = textBox.textRange.characterAttributes,
         bounds,
         border;
 
-    textBox.contents = value;
+    textBox.contents = " " + value + " ";
     textChars.textFont = font.face;
     textChars.tracking = font.tracking;
     textChars.size     = font.size;
+    if(/\&/.test(value)){
+      textChars.fillColor = rgb(153, 69, 0);
+    }else{
+      textChars.fillColor= rgb(136, 18, 128);
+    }
 
     bounds = group.geometricBounds;
     border = group.pathItems.rectangle(
@@ -223,31 +173,20 @@ function makeTags(tags){
     border.strokeWidth = 0.001;
   };
 
-
   function place(){
-    walk(all, function(index, tag){
-      for(var x = tag["repeat"] - 1; x >= 0; x--){
-        var pair = groups.add();
-        walk(tag, function(type, value){
-          if(!value || type == "repeat"){
-            return;
-          }
-          if(value.indexOf("<") == -1
-          && value.indexOf(">") == -1
-          && !/^&\w+;$/.test(value)){
-            value = "<" + value + ">";
-          }
-          value = " " + value + " ";
-
-          if(type === "open"){
-            up = up - font.theight;
-            left = 0;
-          }
-          textBox(pair, value, left, up);
-        });
-      };
+    walk(tags, function(rownum, row){
+      up = -1 * font.theight * (rownum + 1);
+      left = 0;
+      walk(row, function(tagnum, tag){
+        if(/^[a-zA-Z]$*/.test(tag)){
+          textBox("".concat("<",tag,">"));
+          textBox("".concat("</",tag,">"));
+        }else{
+          textBox(tag);
+        }
+      });
     });
-  };
+  }
 };
 
 new makeTags(tags);
