@@ -1,7 +1,8 @@
 var font = {
   face:     app.textFonts.getByName("LetterGothicStd-Bold"), 
   tracking: -100,
-  size:     12
+  size:     24,
+  theight:  UnitValue(.375, "in").as("pt")
 };
 var tags = [
 '!DOCTYPE html',
@@ -34,7 +35,104 @@ var tags = [
   'q,/q',
   '<img alt="," src="#"/>',
   'br /,,1',
+  '&amp;',
+  '&shy;',
+  '&mdash;',
+  '&ndash;',
+  '&hearts;',
+  '&lt;',
+  '&gt;',
+  '&rdquo;',
+  '&ldquo;',
+  '&ne;',
+  '&hellip;'
   ];
+
+var works = [
+  [
+    '<!DOCTYPE html>',
+    'html',
+    'head',
+    '&lt;',
+    '&gt;'
+  ],
+  [
+    'title',
+    'body',
+    'header',
+    '&ne;'
+  ],
+  [
+    'main',
+    'footer',
+    '<img alt="','" src="#"/>'
+  ],
+  [
+    'section',
+    'section',
+    'span'
+  ],
+  [
+    'h1',
+    'div,2',
+    '&shy;',
+    'ol'
+  ],
+  [
+    'h2',
+    'ul'
+  ],
+  [
+    'h2',
+    'li'
+  ],
+  [
+    'h3',
+    'li'
+  ],
+  [
+    'h3',
+    'li'
+  ],
+  [
+    'dl',
+    'dd'
+  ],
+  [
+    'dt',
+    '&mdash;',
+    '&hearts;',
+    '&ldquo;',
+    '&rdquo;',
+    'dd'
+  ],
+  [
+    'dt',
+    'blockquote',
+    'q',
+    '&hellip;'
+  ],
+  [
+    'p',
+    'marquee',
+    'strong',
+    '<br />'
+  ],
+  [
+    'p',
+    'blink',
+    'pre',
+    '&amp;',
+    's'
+  ],
+  [
+    'p',
+    'small',
+    '<a href="#">',
+    '</a>',
+    'em'
+  ]
+];
 
 function walk(collection, callback){
   switch(collection instanceof Array){
@@ -117,7 +215,7 @@ function makeTags(tags){
         bounds[1],
         bounds[0],
         bounds[2] - bounds[0],
-        UnitValue(.5, "cm").as("pt")
+        font.theight
         );
     left = bounds[2];
     border.filled = false;
@@ -134,13 +232,15 @@ function makeTags(tags){
           if(!value || type == "repeat"){
             return;
           }
-          if(value.indexOf("<") == -1  && value.indexOf(">") == -1){
+          if(value.indexOf("<") == -1
+          && value.indexOf(">") == -1
+          && !/^&\w+;$/.test(value)){
             value = "<" + value + ">";
           }
           value = " " + value + " ";
 
           if(type === "open"){
-            up = up - UnitValue(.5, "cm").as("pt");
+            up = up - font.theight;
             left = 0;
           }
           textBox(pair, value, left, up);
