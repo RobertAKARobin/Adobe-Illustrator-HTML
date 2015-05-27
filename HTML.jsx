@@ -1,7 +1,8 @@
 var font = {
   face:     app.textFonts.getByName("LetterGothicStd-Bold"), 
-  tracking: -100,
-  size:     24,
+  tracking: 0,
+  size:     20,
+  baseline: -3,
   theight:  UnitValue(.375, "in").as("pt")
 };
 
@@ -165,7 +166,7 @@ function makeTags(tags){
 
     bounds = group.geometricBounds;
     border = group.pathItems.rectangle(
-      bounds[1],
+      up,
       bounds[0],
       bounds[2] - bounds[0],
       font.theight
@@ -178,7 +179,6 @@ function makeTags(tags){
 
   function place(){
     walk(tags, function(rownum, row){
-      up = -1 * font.theight * (rownum + 1);
       left = 0;
       walk(row, function(tagnum, tag){
         if(/^[a-zA-Z0-9]*$/.test(tag)){
@@ -188,6 +188,7 @@ function makeTags(tags){
           textBox(tag);
         }
       });
+      up = -1 * font.theight * (rownum + 1);
     });
   }
 };
